@@ -1,0 +1,1030 @@
+<!DOCTYPE html>
+<html lang="en" class="scroll-smooth">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>General Chemistry I - Interactive Study Dashboard</title>
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- FontAwesome Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <!-- Google Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=Fira+Code:wght@400;500;600&display=swap" rel="stylesheet">
+    <!-- Tailwind Config for Custom Colors -->
+    <script>
+        tailwind.config = {
+            darkMode: 'class',
+            theme: {
+                extend: {
+                    colors: {
+                        brand: {
+                            50: '#f0fdfa',
+                            100: '#ccfbf1',
+                            500: '#14b8a6',
+                            600: '#0d9488',
+                            700: '#0f766e',
+                            800: '#115e59',
+                            900: '#134e4a',
+                        },
+                        chem: {
+                            purple: '#8b5cf6',
+                            blue: '#3b82f6',
+                            emerald: '#10b981',
+                            amber: '#f59e0b',
+                            rose: '#f43f5e',
+                        }
+                    },
+                    fontFamily: {
+                        sans: ['Inter', 'sans-serif'],
+                        mono: ['Fira Code', 'monospace'],
+                    }
+                }
+            }
+        }
+    </script>
+    <style>
+        .glass-card {
+            background: rgba(255, 255, 255, 0.85);
+            backdrop-filter: blur(12px);
+        }
+        .dark .glass-card {
+            background: rgba(30, 41, 59, 0.85);
+            backdrop-filter: blur(12px);
+        }
+        .flip-card {
+            perspective: 1000px;
+        }
+        .flip-card-inner {
+            transition: transform 0.6s;
+            transform-style: preserve-3d;
+        }
+        .flip-card.flipped .flip-card-inner {
+            transform: rotateY(180deg);
+        }
+        .flip-card-front, .flip-card-back {
+            backface-visibility: hidden;
+        }
+        .flip-card-back {
+            transform: rotateY(180deg);
+        }
+        /* Custom scrollbar */
+        ::-webkit-scrollbar {
+            width: 8px;
+            height: 8px;
+        }
+        ::-webkit-scrollbar-track {
+            background: rgba(0, 0, 0, 0.05);
+        }
+        ::-webkit-scrollbar-thumb {
+            background: rgba(20, 184, 166, 0.4);
+            border-radius: 4px;
+        }
+        ::-webkit-scrollbar-thumb:hover {
+            background: rgba(20, 184, 166, 0.7);
+        }
+    </style>
+</head>
+<body class="bg-slate-50 text-slate-800 dark:bg-slate-900 dark:text-slate-100 font-sans min-h-screen transition-colors duration-300 flex flex-col">
+
+    <!-- HEADER / NAVIGATION -->
+    <header class="sticky top-0 z-50 bg-white/90 dark:bg-slate-800/90 backdrop-blur-md border-b border-slate-200 dark:border-slate-700 shadow-sm">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="flex items-center justify-between h-16">
+                <!-- Logo & Title -->
+                <div class="flex items-center space-x-3">
+                    <div class="w-10 h-10 rounded-xl bg-gradient-to-tr from-brand-500 to-blue-600 flex items-center justify-center text-white shadow-lg shadow-brand-500/30">
+                        <i class="fa-solid font-bold text-xl fa-flask"></i>
+                    </div>
+                    <div>
+                        <h1 class="font-bold text-lg leading-tight bg-gradient-to-r from-brand-600 to-blue-600 bg-clip-text text-transparent dark:from-brand-500 dark:to-blue-400">
+                            ChemDash <span class="text-xs px-2 py-0.5 rounded-full bg-brand-100 dark:bg-brand-900/50 text-brand-700 dark:text-brand-300 font-semibold uppercase tracking-wider ml-1">Lec 1</span>
+                        </h1>
+                        <p class="text-xs text-slate-500 dark:text-slate-400">Matter, Changes & Classification</p>
+                    </div>
+                </div>
+
+                <!-- Navigation Tabs (Desktop) -->
+                <nav class="hidden md:flex space-x-1">
+                    <button onclick="switchTab('study')" id="tab-study" class="nav-btn px-4 py-2 rounded-lg font-medium text-sm transition-all duration-200 flex items-center gap-2 bg-brand-50 text-brand-600 dark:bg-slate-700 dark:text-brand-400 shadow-sm">
+                        <i class="fa-solid fa-book-open"></i> Study Notes
+                    </button>
+                    <button onclick="switchTab('lab')" id="tab-lab" class="nav-btn px-4 py-2 rounded-lg font-medium text-sm transition-all duration-200 flex items-center gap-2 text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-700">
+                        <i class="fa-solid fa-vial-circle-check"></i> Lab Separator
+                    </button>
+                    <button onclick="switchTab('practice')" id="tab-practice" class="nav-btn px-4 py-2 rounded-lg font-medium text-sm transition-all duration-200 flex items-center gap-2 text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-700">
+                        <i class="fa-solid fa-graduation-cap"></i> Practice & Quiz
+                    </button>
+                </nav>
+
+                <!-- Actions: Dark Mode & Mobile Menu Button -->
+                <div class="flex items-center space-x-2">
+                    <button id="theme-toggle" class="p-2.5 rounded-xl border border-slate-200 dark:border-slate-700 text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-700 transition-colors" title="Toggle Theme">
+                        <i class="fa-solid fa-moon dark:hidden"></i>
+                        <i class="fa-solid fa-sun hidden dark:block text-amber-400"></i>
+                    </button>
+                    <button id="mobile-menu-btn" onclick="toggleMobileMenu()" class="md:hidden p-2.5 rounded-xl border border-slate-200 dark:border-slate-700 text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-700">
+                        <i class="fa-solid fa-bars text-lg"></i>
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Mobile Navigation Menu -->
+        <div id="mobile-menu" class="hidden md:hidden border-b border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 px-4 pt-2 pb-4 space-y-1">
+            <button onclick="switchTab('study'); toggleMobileMenu()" class="w-full text-left px-3 py-2.5 rounded-lg text-sm font-medium flex items-center gap-3 text-slate-700 dark:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-700">
+                <i class="fa-solid fa-book-open text-brand-500"></i> Study Notes
+            </button>
+            <button onclick="switchTab('lab'); toggleMobileMenu()" class="w-full text-left px-3 py-2.5 rounded-lg text-sm font-medium flex items-center gap-3 text-slate-700 dark:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-700">
+                <i class="fa-solid fa-vial-circle-check text-blue-500"></i> Lab Separator Tool
+            </button>
+            <button onclick="switchTab('practice'); toggleMobileMenu()" class="w-full text-left px-3 py-2.5 rounded-lg text-sm font-medium flex items-center gap-3 text-slate-700 dark:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-700">
+                <i class="fa-solid fa-graduation-cap text-purple-500"></i> Practice & Quiz Center
+            </button>
+        </div>
+    </header>
+
+    <!-- MAIN CONTENT AREA -->
+    <main class="flex-grow max-w-7xl w-full mx-auto px-4 sm:px-6 lg:px-8 py-8">
+
+        <!-- ==================== TAB 1: STUDY NOTES & SUMMARY ==================== -->
+        <section id="content-study" class="space-y-12 animate-fadeIn">
+            <!-- Hero Banner -->
+            <div class="relative overflow-hidden rounded-3xl bg-gradient-to-r from-brand-600 via-teal-600 to-blue-700 text-white p-8 sm:p-10 shadow-xl">
+                <div class="absolute -right-10 -bottom-10 w-64 h-64 bg-white/10 rounded-full blur-2xl pointer-events-none"></div>
+                <div class="relative z-10 max-w-3xl">
+                    <span class="inline-block px-3 py-1 rounded-full bg-white/20 text-white text-xs font-semibold tracking-wide uppercase mb-4 backdrop-blur-sm">National Technical Institute</span>
+                    <h2 class="text-3xl sm:text-4xl font-extrabold tracking-tight">General Chemistry I</h2>
+                    <p class="text-lg text-teal-100 mt-2">Lecture 1: Matter, Changes & Classification</p>
+                    <p class="mt-4 text-sm text-teal-50/90 leading-relaxed">
+                        <i class="fa-solid fa-lightbulb text-amber-300 mr-2"></i>
+                        <strong>Chemistry:</strong> The study of the composition, structure, and properties of matter, the processes that matter undergoes, and the energy changes that accompany these processes.
+                    </p>
+                </div>
+            </div>
+
+            <!-- SECTION 1: 6 MAIN BRANCHES OF CHEMISTRY -->
+            <div class="space-y-6">
+                <div class="flex items-center justify-between border-b border-slate-200 dark:border-slate-700 pb-3">
+                    <h3 class="text-2xl font-bold text-slate-900 dark:text-white flex items-center gap-2">
+                        <i class="fa-solid fa-diagram-project text-brand-500"></i> 1. The 6 Main Branches of Chemistry
+                    </h3>
+                    <span class="text-xs font-medium text-slate-500 dark:text-slate-400">Click cards for context</span>
+                </div>
+                <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+                    <!-- Branch 1 -->
+                    <div class="group p-6 rounded-2xl bg-white dark:bg-slate-800 border border-slate-200/80 dark:border-slate-700 shadow-sm hover:shadow-md hover:border-brand-500/50 transition-all">
+                        <div class="w-12 h-12 rounded-xl bg-blue-100 dark:bg-blue-900/40 text-blue-600 dark:text-blue-400 flex items-center justify-center text-xl mb-4 group-hover:scale-110 transition-transform">
+                            <i class="fa-solid fa-microscope"></i>
+                        </div>
+                        <h4 class="font-bold text-lg text-slate-900 dark:text-white mb-1">1. Analytical Chemistry</h4>
+                        <p class="text-sm text-slate-600 dark:text-slate-300 mb-4">Identification of the components and composition of materials.</p>
+                        <div class="p-3 rounded-xl bg-slate-50 dark:bg-slate-700/50 border border-slate-100 dark:border-slate-700/50 text-xs">
+                            <span class="font-semibold text-blue-600 dark:text-blue-400 block mb-0.5">First-Year Example:</span>
+                            Testing water to see if it is pure.
+                        </div>
+                    </div>
+                    <!-- Branch 2 -->
+                    <div class="group p-6 rounded-2xl bg-white dark:bg-slate-800 border border-slate-200/80 dark:border-slate-700 shadow-sm hover:shadow-md hover:border-brand-500/50 transition-all">
+                        <div class="w-12 h-12 rounded-xl bg-emerald-100 dark:bg-emerald-900/40 text-emerald-600 dark:text-emerald-400 flex items-center justify-center text-xl mb-4 group-hover:scale-110 transition-transform">
+                            <i class="fa-solid fa-leaf"></i>
+                        </div>
+                        <h4 class="font-bold text-lg text-slate-900 dark:text-white mb-1">2. Organic Chemistry</h4>
+                        <p class="text-sm text-slate-600 dark:text-slate-300 mb-4">Study of most carbon-containing compounds.</p>
+                        <div class="p-3 rounded-xl bg-slate-50 dark:bg-slate-700/50 border border-slate-100 dark:border-slate-700/50 text-xs">
+                            <span class="font-semibold text-emerald-600 dark:text-emerald-400 block mb-0.5">First-Year Example:</span>
+                            Studying plastics, oil, and medicine.
+                        </div>
+                    </div>
+                    <!-- Branch 3 -->
+                    <div class="group p-6 rounded-2xl bg-white dark:bg-slate-800 border border-slate-200/80 dark:border-slate-700 shadow-sm hover:shadow-md hover:border-brand-500/50 transition-all">
+                        <div class="w-12 h-12 rounded-xl bg-purple-100 dark:bg-purple-900/40 text-purple-600 dark:text-purple-400 flex items-center justify-center text-xl mb-4 group-hover:scale-110 transition-transform">
+                            <i class="fa-solid fa-fire-flame-curved"></i>
+                        </div>
+                        <h4 class="font-bold text-lg text-slate-900 dark:text-white mb-1">3. Physical Chemistry</h4>
+                        <p class="text-sm text-slate-600 dark:text-slate-300 mb-4">Study of properties and changes of matter and their relation to energy.</p>
+                        <div class="p-3 rounded-xl bg-slate-50 dark:bg-slate-700/50 border border-slate-100 dark:border-slate-700/50 text-xs">
+                            <span class="font-semibold text-purple-600 dark:text-purple-400 block mb-0.5">First-Year Example:</span>
+                            Studying how heat changes liquid into steam.
+                        </div>
+                    </div>
+                    <!-- Branch 4 -->
+                    <div class="group p-6 rounded-2xl bg-white dark:bg-slate-800 border border-slate-200/80 dark:border-slate-700 shadow-sm hover:shadow-md hover:border-brand-500/50 transition-all">
+                        <div class="w-12 h-12 rounded-xl bg-amber-100 dark:bg-amber-900/40 text-amber-600 dark:text-amber-400 flex items-center justify-center text-xl mb-4 group-hover:scale-110 transition-transform">
+                            <i class="fa-solid fa-gem"></i>
+                        </div>
+                        <h4 class="font-bold text-lg text-slate-900 dark:text-white mb-1">4. Inorganic Chemistry</h4>
+                        <p class="text-sm text-slate-600 dark:text-slate-300 mb-4">Study of non-organic compounds (materials without carbon).</p>
+                        <div class="p-3 rounded-xl bg-slate-50 dark:bg-slate-700/50 border border-slate-100 dark:border-slate-700/50 text-xs">
+                            <span class="font-semibold text-amber-600 dark:text-amber-400 block mb-0.5">First-Year Example:</span>
+                            Studying metals, rocks, and minerals.
+                        </div>
+                    </div>
+                    <!-- Branch 5 -->
+                    <div class="group p-6 rounded-2xl bg-white dark:bg-slate-800 border border-slate-200/80 dark:border-slate-700 shadow-sm hover:shadow-md hover:border-brand-500/50 transition-all">
+                        <div class="w-12 h-12 rounded-xl bg-rose-100 dark:bg-rose-900/40 text-rose-600 dark:text-rose-400 flex items-center justify-center text-xl mb-4 group-hover:scale-110 transition-transform">
+                            <i class="fa-solid fa-dna"></i>
+                        </div>
+                        <h4 class="font-bold text-lg text-slate-900 dark:text-white mb-1">5. Biochemistry</h4>
+                        <p class="text-sm text-slate-600 dark:text-slate-300 mb-4">Study of substances and processes in living things.</p>
+                        <div class="p-3 rounded-xl bg-slate-50 dark:bg-slate-700/50 border border-slate-100 dark:border-slate-700/50 text-xs">
+                            <span class="font-semibold text-rose-600 dark:text-rose-400 block mb-0.5">First-Year Example:</span>
+                            Studying how food digests in the stomach.
+                        </div>
+                    </div>
+                    <!-- Branch 6 -->
+                    <div class="group p-6 rounded-2xl bg-white dark:bg-slate-800 border border-slate-200/80 dark:border-slate-700 shadow-sm hover:shadow-md hover:border-brand-500/50 transition-all">
+                        <div class="w-12 h-12 rounded-xl bg-indigo-100 dark:bg-indigo-900/40 text-indigo-600 dark:text-indigo-400 flex items-center justify-center text-xl mb-4 group-hover:scale-110 transition-transform">
+                            <i class="fa-solid fa-laptop-code"></i>
+                        </div>
+                        <h4 class="font-bold text-lg text-slate-900 dark:text-white mb-1">6. Theoretical Chemistry</h4>
+                        <p class="text-sm text-slate-600 dark:text-slate-300 mb-4">Use of math and computers to understand chemical behavior.</p>
+                        <div class="p-3 rounded-xl bg-slate-50 dark:bg-slate-700/50 border border-slate-100 dark:border-slate-700/50 text-xs">
+                            <span class="font-semibold text-indigo-600 dark:text-indigo-400 block mb-0.5">First-Year Example:</span>
+                            Using computer models to draw molecules.
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- SECTION 2: FUNDAMENTAL UNITS OF MATTER -->
+            <div class="space-y-6">
+                <div class="border-b border-slate-200 dark:border-slate-700 pb-3">
+                    <h3 class="text-2xl font-bold text-slate-900 dark:text-white flex items-center gap-2">
+                        <i class="fa-solid fa-atom text-brand-500"></i> 2. Matter & Fundamental Units
+                    </h3>
+                    <p class="text-sm text-slate-500 dark:text-slate-400 mt-1">
+                        <strong>Matter:</strong> Anything that has mass and occupies space.
+                    </p>
+                </div>
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+                    <div class="p-6 rounded-2xl bg-white dark:bg-slate-800 border-2 border-brand-100 dark:border-slate-700 shadow-sm relative overflow-hidden">
+                        <div class="absolute top-0 right-0 w-20 h-20 bg-brand-500/10 rounded-bl-full pointer-events-none"></div>
+                        <h4 class="text-xl font-bold text-brand-600 dark:text-brand-400 mb-2">Atom</h4>
+                        <p class="text-sm text-slate-600 dark:text-slate-300 mb-4 leading-relaxed">
+                            The smallest unit of an element that maintains the chemical identity of that element.
+                        </p>
+                        <div class="space-y-2">
+                            <span class="text-xs uppercase font-bold text-slate-400">Easy Examples:</span>
+                            <div class="flex flex-wrap gap-2">
+                                <span class="px-2.5 py-1 rounded-lg bg-slate-100 dark:bg-slate-700 font-mono text-sm font-semibold text-slate-800 dark:text-slate-200">H (Hydrogen)</span>
+                                <span class="px-2.5 py-1 rounded-lg bg-slate-100 dark:bg-slate-700 font-mono text-sm font-semibold text-slate-800 dark:text-slate-200">O (Oxygen)</span>
+                                <span class="px-2.5 py-1 rounded-lg bg-slate-100 dark:bg-slate-700 font-mono text-sm font-semibold text-slate-800 dark:text-slate-200">Fe (Iron)</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="p-6 rounded-2xl bg-white dark:bg-slate-800 border-2 border-blue-100 dark:border-slate-700 shadow-sm relative overflow-hidden">
+                        <div class="absolute top-0 right-0 w-20 h-20 bg-blue-500/10 rounded-bl-full pointer-events-none"></div>
+                        <h4 class="text-xl font-bold text-blue-600 dark:text-blue-400 mb-2">Element</h4>
+                        <p class="text-sm text-slate-600 dark:text-slate-300 mb-4 leading-relaxed">
+                            A pure substance that cannot be broken down into simpler, stable substances and is made of only one type of atom.
+                        </p>
+                        <div class="space-y-2">
+                            <span class="text-xs uppercase font-bold text-slate-400">Easy Examples:</span>
+                            <div class="flex flex-wrap gap-2">
+                                <span class="px-2.5 py-1 rounded-lg bg-slate-100 dark:bg-slate-700 font-mono text-sm font-semibold text-slate-800 dark:text-slate-200">Pure Gold (Au)</span>
+                                <span class="px-2.5 py-1 rounded-lg bg-slate-100 dark:bg-slate-700 font-mono text-sm font-semibold text-slate-800 dark:text-slate-200">Iron (Fe)</span>
+                                <span class="px-2.5 py-1 rounded-lg bg-slate-100 dark:bg-slate-700 font-mono text-sm font-semibold text-slate-800 dark:text-slate-200">O₂ Gas</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="p-6 rounded-2xl bg-white dark:bg-slate-800 border-2 border-purple-100 dark:border-slate-700 shadow-sm relative overflow-hidden">
+                        <div class="absolute top-0 right-0 w-20 h-20 bg-purple-500/10 rounded-bl-full pointer-events-none"></div>
+                        <h4 class="text-xl font-bold text-purple-600 dark:text-purple-400 mb-2">Molecule</h4>
+                        <p class="text-sm text-slate-600 dark:text-slate-300 mb-4 leading-relaxed">
+                            A substance made of two or more atoms combined that can be broken down into simpler substances.
+                        </p>
+                        <div class="space-y-2">
+                            <span class="text-xs uppercase font-bold text-slate-400">Easy Examples:</span>
+                            <div class="flex flex-wrap gap-2">
+                                <span class="px-2.5 py-1 rounded-lg bg-slate-100 dark:bg-slate-700 font-mono text-sm font-semibold text-slate-800 dark:text-slate-200">H₂O (Water)</span>
+                                <span class="px-2.5 py-1 rounded-lg bg-slate-100 dark:bg-slate-700 font-mono text-sm font-semibold text-slate-800 dark:text-slate-200">CO₂ (Carbon Dioxide)</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- SECTION 3: THE 4 STATES OF MATTER -->
+            <div class="space-y-6">
+                <div class="border-b border-slate-200 dark:border-slate-700 pb-3">
+                    <h3 class="text-2xl font-bold text-slate-900 dark:text-white flex items-center gap-2">
+                        <i class="fa-solid fa-cubes text-brand-500"></i> 3. The 4 States of Matter
+                    </h3>
+                </div>
+                <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
+                    <!-- Solid -->
+                    <div class="bg-white dark:bg-slate-800 rounded-2xl p-5 border border-slate-200 dark:border-slate-700 shadow-sm flex flex-col justify-between">
+                        <div>
+                            <div class="flex items-center justify-between mb-3">
+                                <h4 class="text-lg font-bold text-slate-900 dark:text-white">Solid</h4>
+                                <span class="p-2 rounded-lg bg-blue-50 dark:bg-blue-900/40 text-blue-500"><i class="fa-solid fa-cube text-xl"></i></span>
+                            </div>
+                            <div class="space-y-2 text-sm mb-4">
+                                <div class="flex justify-between border-b border-slate-100 dark:border-slate-700/50 py-1">
+                                    <span class="text-slate-500">Volume:</span>
+                                    <span class="font-semibold text-emerald-600 dark:text-emerald-400">Definite</span>
+                                </div>
+                                <div class="flex justify-between border-b border-slate-100 dark:border-slate-700/50 py-1">
+                                    <span class="text-slate-500">Shape:</span>
+                                    <span class="font-semibold text-emerald-600 dark:text-emerald-400">Definite</span>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="text-xs text-slate-500 dark:text-slate-400 bg-slate-50 dark:bg-slate-700/50 p-2.5 rounded-xl">
+                            <strong>Examples:</strong> Ice cube, stone, iron key.
+                        </div>
+                    </div>
+
+                    <!-- Liquid -->
+                    <div class="bg-white dark:bg-slate-800 rounded-2xl p-5 border border-slate-200 dark:border-slate-700 shadow-sm flex flex-col justify-between">
+                        <div>
+                            <div class="flex items-center justify-between mb-3">
+                                <h4 class="text-lg font-bold text-slate-900 dark:text-white">Liquid</h4>
+                                <span class="p-2 rounded-lg bg-teal-50 dark:bg-teal-900/40 text-teal-500"><i class="fa-solid fa-droplet text-xl"></i></span>
+                            </div>
+                            <div class="space-y-2 text-sm mb-4">
+                                <div class="flex justify-between border-b border-slate-100 dark:border-slate-700/50 py-1">
+                                    <span class="text-slate-500">Volume:</span>
+                                    <span class="font-semibold text-emerald-600 dark:text-emerald-400">Definite</span>
+                                </div>
+                                <div class="flex justify-between border-b border-slate-100 dark:border-slate-700/50 py-1">
+                                    <span class="text-slate-500">Shape:</span>
+                                    <span class="font-semibold text-rose-500 dark:text-rose-400">Indefinite</span>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="text-xs text-slate-500 dark:text-slate-400 bg-slate-50 dark:bg-slate-700/50 p-2.5 rounded-xl">
+                            <strong>Examples:</strong> Water, milk, oil (takes container shape).
+                        </div>
+                    </div>
+
+                    <!-- Gas -->
+                    <div class="bg-white dark:bg-slate-800 rounded-2xl p-5 border border-slate-200 dark:border-slate-700 shadow-sm flex flex-col justify-between">
+                        <div>
+                            <div class="flex items-center justify-between mb-3">
+                                <h4 class="text-lg font-bold text-slate-900 dark:text-white">Gas</h4>
+                                <span class="p-2 rounded-lg bg-purple-50 dark:bg-purple-900/40 text-purple-500"><i class="fa-solid fa-wind text-xl"></i></span>
+                            </div>
+                            <div class="space-y-2 text-sm mb-4">
+                                <div class="flex justify-between border-b border-slate-100 dark:border-slate-700/50 py-1">
+                                    <span class="text-slate-500">Volume:</span>
+                                    <span class="font-semibold text-rose-500 dark:text-rose-400">Indefinite</span>
+                                </div>
+                                <div class="flex justify-between border-b border-slate-100 dark:border-slate-700/50 py-1">
+                                    <span class="text-slate-500">Shape:</span>
+                                    <span class="font-semibold text-rose-500 dark:text-rose-400">Indefinite</span>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="text-xs text-slate-500 dark:text-slate-400 bg-slate-50 dark:bg-slate-700/50 p-2.5 rounded-xl">
+                            <strong>Examples:</strong> Air, oxygen gas, steam (fills container).
+                        </div>
+                    </div>
+
+                    <!-- Plasma -->
+                    <div class="bg-white dark:bg-slate-800 rounded-2xl p-5 border border-slate-200 dark:border-slate-700 shadow-sm flex flex-col justify-between">
+                        <div>
+                            <div class="flex items-center justify-between mb-3">
+                                <h4 class="text-lg font-bold text-slate-900 dark:text-white">Plasma</h4>
+                                <span class="p-2 rounded-lg bg-amber-50 dark:bg-amber-900/40 text-amber-500"><i class="fa-solid fa-bolt text-xl"></i></span>
+                            </div>
+                            <div class="space-y-2 text-sm mb-4">
+                                <div class="flex justify-between border-b border-slate-100 dark:border-slate-700/50 py-1">
+                                    <span class="text-slate-500">Volume/Shape:</span>
+                                    <span class="font-semibold text-amber-500">Variable</span>
+                                </div>
+                                <div class="text-xs text-slate-500 mt-1">
+                                    High-temp state where atoms lose electrons.
+                                </div>
+                            </div>
+                        </div>
+                        <div class="text-xs text-slate-500 dark:text-slate-400 bg-slate-50 dark:bg-slate-700/50 p-2.5 rounded-xl">
+                            <strong>Examples:</strong> Lightning, sun, neon signs.
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- SECTION 4: PROPERTIES AND CHANGES -->
+            <div class="space-y-6">
+                <div class="border-b border-slate-200 dark:border-slate-700 pb-3">
+                    <h3 class="text-2xl font-bold text-slate-900 dark:text-white flex items-center gap-2">
+                        <i class="fa-solid fa-right-left text-brand-500"></i> 4. Properties & Changes in Matter
+                    </h3>
+                </div>
+                
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <!-- Physical Change -->
+                    <div class="p-6 rounded-2xl bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 shadow-sm space-y-4">
+                        <div class="flex items-center gap-3">
+                            <div class="w-10 h-10 rounded-xl bg-blue-100 dark:bg-blue-900/40 text-blue-600 dark:text-blue-400 flex items-center justify-center text-lg font-bold">P</div>
+                            <h4 class="text-xl font-bold text-slate-900 dark:text-white">Physical Change</h4>
+                        </div>
+                        <p class="text-sm text-slate-600 dark:text-slate-300">
+                            A change that can be observed <strong>without changing the identity</strong> of the substance.
+                        </p>
+                        <div class="p-4 rounded-xl bg-slate-50 dark:bg-slate-700/40 space-y-2">
+                            <span class="text-xs font-bold text-slate-500 uppercase tracking-wider">Simple Examples:</span>
+                            <ul class="text-sm text-slate-700 dark:text-slate-300 space-y-1 list-disc list-inside">
+                                <li>Cutting paper</li>
+                                <li>Melting ice</li>
+                                <li>Boiling water</li>
+                                <li>Grinding salt</li>
+                            </ul>
+                        </div>
+                    </div>
+
+                    <!-- Chemical Change -->
+                    <div class="p-6 rounded-2xl bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 shadow-sm space-y-4">
+                        <div class="flex items-center gap-3">
+                            <div class="w-10 h-10 rounded-xl bg-rose-100 dark:bg-rose-900/40 text-rose-600 dark:text-rose-400 flex items-center justify-center text-lg font-bold">C</div>
+                            <h4 class="text-xl font-bold text-slate-900 dark:text-white">Chemical Change</h4>
+                        </div>
+                        <p class="text-sm text-slate-600 dark:text-slate-300">
+                            A change in which substances are converted into <strong>new substances</strong> (Chemical Reaction).
+                        </p>
+                        <div class="grid grid-cols-2 gap-2 text-xs font-medium">
+                            <div class="p-2.5 rounded-lg bg-amber-50 dark:bg-amber-900/30 text-amber-800 dark:text-amber-300">
+                                <strong>Reactants:</strong> Starting substances that react.
+                            </div>
+                            <div class="p-2.5 rounded-lg bg-emerald-50 dark:bg-emerald-900/30 text-emerald-800 dark:text-emerald-300">
+                                <strong>Products:</strong> New substances formed.
+                            </div>
+                        </div>
+                        <div class="p-4 rounded-xl bg-slate-50 dark:bg-slate-700/40 space-y-2">
+                            <span class="text-xs font-bold text-slate-500 uppercase tracking-wider">Simple Examples:</span>
+                            <ul class="text-sm text-slate-700 dark:text-slate-300 space-y-1 list-disc list-inside">
+                                <li>Burning wood</li>
+                                <li>Rusting iron</li>
+                                <li>Baking bread</li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Chemical Reaction Examples -->
+                <div class="bg-slate-900 text-white p-6 rounded-2xl shadow-lg space-y-4">
+                    <h4 class="text-lg font-bold text-brand-400 flex items-center gap-2">
+                        <i class="fa-solid fa-flask-vial"></i> Chemical Reaction Examples
+                    </h4>
+                    <div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
+                        <div class="p-4 rounded-xl bg-slate-800 border border-slate-700 space-y-2">
+                            <span class="text-xs font-bold text-slate-400">1. Carbon Burning</span>
+                            <p class="font-mono text-base font-bold text-amber-300">C + O₂ ➔ CO₂ ↑</p>
+                            <div class="text-xs text-slate-400">
+                                Reactants: C + O₂<br>Product: CO₂
+                            </div>
+                        </div>
+                        <div class="p-4 rounded-xl bg-slate-800 border border-slate-700 space-y-2">
+                            <span class="text-xs font-bold text-slate-400">2. Iron Rusting</span>
+                            <p class="font-mono text-base font-bold text-amber-300">4Fe + 3O₂ ➔ 2Fe₂O₃</p>
+                            <div class="text-xs text-slate-400">
+                                Reactants: 4Fe + 3O₂<br>Product: 2Fe₂O₃
+                            </div>
+                        </div>
+                        <div class="p-4 rounded-xl bg-slate-800 border border-slate-700 space-y-2">
+                            <span class="text-xs font-bold text-slate-400">3. Electrolysis (Water)</span>
+                            <p class="font-mono text-base font-bold text-amber-300">2H₂O ➔ 2H₂ ↑ + O₂ ↑</p>
+                            <div class="text-xs text-slate-400">
+                                Reactant: 2H₂O<br>Products: 2H₂, O₂
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- SECTION 5: CLASSIFICATION OF MATTER -->
+            <div class="space-y-6">
+                <div class="border-b border-slate-200 dark:border-slate-700 pb-3">
+                    <h3 class="text-2xl font-bold text-slate-900 dark:text-white flex items-center gap-2">
+                        <i class="fa-solid fa-sitemap text-brand-500"></i> 5. Classification of Matter
+                    </h3>
+                    <p class="text-sm text-slate-500 dark:text-slate-400">Interactive Flowchart of Matter</p>
+                </div>
+
+                <!-- Flowchart Container -->
+                <div class="p-6 bg-white dark:bg-slate-800 rounded-2xl border border-slate-200 dark:border-slate-700 shadow-sm text-center">
+                    <!-- Root -->
+                    <div class="inline-block px-6 py-3 bg-brand-600 text-white font-bold text-lg rounded-xl shadow-md mb-8">
+                        MATTER
+                    </div>
+
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-8 relative">
+                        <!-- Left Branch: Pure Substances -->
+                        <div class="p-5 rounded-2xl bg-teal-50/50 dark:bg-slate-700/30 border-2 border-teal-200 dark:border-teal-900/50 space-y-4">
+                            <div class="inline-block px-4 py-2 bg-teal-600 text-white font-bold rounded-lg text-sm">
+                                PURE SUBSTANCES
+                            </div>
+                            <p class="text-xs text-slate-600 dark:text-slate-300 italic">Constant composition & fixed properties</p>
+                            
+                            <div class="grid grid-cols-2 gap-3 pt-2">
+                                <div class="p-3 bg-white dark:bg-slate-800 rounded-xl border border-teal-100 dark:border-slate-700 shadow-sm">
+                                    <h5 class="font-bold text-teal-700 dark:text-teal-400 text-sm">Elements</h5>
+                                    <p class="text-xs text-slate-500 dark:text-slate-400 mt-1">One type of atom (e.g., Fe, O₂)</p>
+                                </div>
+                                <div class="p-3 bg-white dark:bg-slate-800 rounded-xl border border-teal-100 dark:border-slate-700 shadow-sm">
+                                    <h5 class="font-bold text-teal-700 dark:text-teal-400 text-sm">Compounds</h5>
+                                    <p class="text-xs text-slate-500 dark:text-slate-400 mt-1">Chemically bound atoms (e.g., H₂O)</p>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Right Branch: Mixtures -->
+                        <div class="p-5 rounded-2xl bg-purple-50/50 dark:bg-slate-700/30 border-2 border-purple-200 dark:border-purple-900/50 space-y-4">
+                            <div class="inline-block px-4 py-2 bg-purple-600 text-white font-bold rounded-lg text-sm">
+                                MIXTURES
+                            </div>
+                            <p class="text-xs text-slate-600 dark:text-slate-300 italic">Variable composition physically mixed</p>
+
+                            <div class="grid grid-cols-2 gap-3 pt-2">
+                                <div class="p-3 bg-white dark:bg-slate-800 rounded-xl border border-purple-100 dark:border-slate-700 shadow-sm">
+                                    <h5 class="font-bold text-purple-700 dark:text-purple-400 text-sm">Homogeneous</h5>
+                                    <p class="text-xs text-slate-500 dark:text-slate-400 mt-1">Uniform appearance (Solution, e.g., Salt water)</p>
+                                </div>
+                                <div class="p-3 bg-white dark:bg-slate-800 rounded-xl border border-purple-100 dark:border-slate-700 shadow-sm">
+                                    <h5 class="font-bold text-purple-700 dark:text-purple-400 text-sm">Heterogeneous</h5>
+                                    <p class="text-xs text-slate-500 dark:text-slate-400 mt-1">Non-uniform, multiple phases (e.g., Sand in water)</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+
+        <!-- ==================== TAB 2: LAB MIXTURE SEPARATOR TOOL ==================== -->
+        <section id="content-lab" class="hidden space-y-8 animate-fadeIn">
+            <div class="bg-gradient-to-r from-blue-600 to-indigo-700 text-white p-6 sm:p-8 rounded-3xl shadow-lg">
+                <span class="px-3 py-1 bg-white/20 rounded-full text-xs font-semibold tracking-wider uppercase">Interactive Sandbox</span>
+                <h2 class="text-3xl font-extrabold mt-2">Virtual Lab: Mixture Separator</h2>
+                <p class="text-blue-100 text-sm mt-1">Select a mixture to analyze and simulate the proper lab separation technique.</p>
+            </div>
+
+            <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
+                <!-- Mixture Selectors Sidebar -->
+                <div class="space-y-4">
+                    <h3 class="font-bold text-lg text-slate-900 dark:text-white flex items-center gap-2">
+                        <i class="fa-solid fa-list-check text-blue-500"></i> Select Mixture Example
+                    </h3>
+
+                    <div class="space-y-2" id="mixture-buttons">
+                        <button onclick="loadLabSim('blood')" id="btn-blood" class="lab-btn w-full text-left p-4 rounded-xl border-2 border-brand-500 bg-brand-50 dark:bg-slate-800 dark:border-brand-500 transition-all font-medium flex items-center justify-between">
+                            <span>a. Blood</span>
+                            <i class="fa-solid fa-vial text-rose-500"></i>
+                        </button>
+
+                        <button onclick="loadLabSim('petroleum')" id="btn-petroleum" class="lab-btn w-full text-left p-4 rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 hover:bg-slate-50 dark:hover:bg-slate-700 transition-all font-medium flex items-center justify-between">
+                            <span>b. Petroleum (Crude Oil)</span>
+                            <i class="fa-solid fa-oil-well text-amber-500"></i>
+                        </button>
+
+                        <button onclick="loadLabSim('water-clay')" id="btn-water-clay" class="lab-btn w-full text-left p-4 rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 hover:bg-slate-50 dark:hover:bg-slate-700 transition-all font-medium flex items-center justify-between">
+                            <span>c. Water and Clay</span>
+                            <i class="fa-solid fa-filter text-blue-500"></i>
+                        </button>
+
+                        <button onclick="loadLabSim('nh4cl-nahco3')" id="btn-nh4cl-nahco3" class="lab-btn w-full text-left p-4 rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 hover:bg-slate-50 dark:hover:bg-slate-700 transition-all font-medium flex items-center justify-between">
+                            <span>d. NaHCO₃ & NH₄Cl</span>
+                            <i class="fa-solid fa-temperature-arrow-up text-purple-500"></i>
+                        </button>
+
+                        <button onclick="loadLabSim('iron-sulfur')" id="btn-iron-sulfur" class="lab-btn w-full text-left p-4 rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 hover:bg-slate-50 dark:hover:bg-slate-700 transition-all font-medium flex items-center justify-between">
+                            <span>e. Iron Powder & Sulfur</span>
+                            <i class="fa-solid fa-magnet text-red-500"></i>
+                        </button>
+
+                        <button onclick="loadLabSim('salt-starch')" id="btn-salt-starch" class="lab-btn w-full text-left p-4 rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 hover:bg-slate-50 dark:hover:bg-slate-700 transition-all font-medium flex items-center justify-between">
+                            <span>f. Salt and Starch</span>
+                            <i class="fa-solid fa-[#10b981] fa-wheat-awn text-emerald-500"></i>
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Simulation Display Panel -->
+                <div class="lg:col-span-2 bg-white dark:bg-slate-800 rounded-2xl p-6 border border-slate-200 dark:border-slate-700 shadow-sm flex flex-col justify-between">
+                    <div id="sim-display-content" class="space-y-6">
+                        <!-- Content dynamically loaded via JS -->
+                    </div>
+
+                    <div class="mt-8 pt-4 border-t border-slate-200 dark:border-slate-700 flex justify-between items-center text-xs text-slate-500">
+                        <span><i class="fa-solid fa-circle-info mr-1"></i> Based on Teacher's Official Answer Key</span>
+                        <span class="font-mono bg-slate-100 dark:bg-slate-700 px-2 py-1 rounded">Lab Module 1.0</span>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+
+        <!-- ==================== TAB 3: PRACTICE & QUIZ CENTER ==================== -->
+        <section id="content-practice" class="hidden space-y-12 animate-fadeIn">
+            <!-- Header Banner -->
+            <div class="bg-gradient-to-r from-purple-600 to-indigo-600 text-white p-6 sm:p-8 rounded-3xl shadow-lg flex flex-col md:flex-row justify-between items-center gap-4">
+                <div>
+                    <span class="px-3 py-1 bg-white/20 rounded-full text-xs font-semibold tracking-wider uppercase">Exam Prep</span>
+                    <h2 class="text-3xl font-extrabold mt-2">Practice & Quiz Center</h2>
+                    <p class="text-purple-100 text-sm mt-1">Test your mastery of Lecture 1 concepts through multiple quiz formats.</p>
+                </div>
+                <!-- Quiz Score Widget -->
+                <div class="bg-white/10 backdrop-blur-md border border-white/20 px-5 py-3 rounded-2xl flex items-center gap-4 text-center">
+                    <div>
+                        <span class="text-xs text-purple-200 uppercase font-semibold">MCQ Score</span>
+                        <p id="mcq-score-display" class="text-2xl font-black text-amber-300">0 / 6</p>
+                    </div>
+                    <div class="h-8 w-px bg-white/20"></div>
+                    <div>
+                        <span class="text-xs text-purple-200 uppercase font-semibold">Self-Test</span>
+                        <p id="self-score-display" class="text-2xl font-black text-emerald-300">0 / 6</p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- SUB-SECTION 1: MULTIPLE CHOICE QUIZ -->
+            <div class="space-y-6">
+                <div class="flex items-center justify-between border-b border-slate-200 dark:border-slate-700 pb-3">
+                    <h3 class="text-2xl font-bold text-slate-900 dark:text-white flex items-center gap-2">
+                        <i class="fa-solid fa-list-check text-purple-500"></i> Section A: Multiple-Choice Questions
+                    </h3>
+                    <button onclick="resetMCQ()" class="text-xs text-brand-600 dark:text-brand-400 hover:underline font-semibold flex items-center gap-1">
+                        <i class="fa-solid fa-rotate-left"></i> Reset Quiz
+                    </button>
+                </div>
+
+                <div class="grid grid-cols-1 gap-6" id="mcq-container">
+                    <!-- MCQ items generated dynamically -->
+                </div>
+            </div>
+
+            <!-- SUB-SECTION 2: REVISION FLASHCARDS -->
+            <div class="space-y-6">
+                <div class="border-b border-slate-200 dark:border-slate-700 pb-3">
+                    <h3 class="text-2xl font-bold text-slate-900 dark:text-white flex items-center gap-2">
+                        <i class="fa-solid fa-clone text-blue-500"></i> Section B: Revision Flashcards
+                    </h3>
+                    <p class="text-sm text-slate-500 dark:text-slate-400">Click card to reveal standard lesson answers.</p>
+                </div>
+
+                <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6" id="flashcard-container">
+                    <!-- Flashcards generated dynamically -->
+                </div>
+            </div>
+
+            <!-- SUB-SECTION 3: QUICK STUDENT SELF-TEST -->
+            <div class="space-y-6">
+                <div class="border-b border-slate-200 dark:border-slate-700 pb-3">
+                    <h3 class="text-2xl font-bold text-slate-900 dark:text-white flex items-center gap-2">
+                        <i class="fa-solid fa-pen-to-square text-emerald-500"></i> Section C: Quick Student Self-Test
+                    </h3>
+                    <p class="text-sm text-slate-500 dark:text-slate-400">Type your answer or click reveal to evaluate yourself.</p>
+                </div>
+
+                <div class="space-y-4" id="selftest-container">
+                    <!-- Self test items generated dynamically -->
+                </div>
+            </div>
+        </section>
+
+    </main>
+
+    <!-- FOOTER -->
+    <footer class="mt-auto border-t border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 py-6 text-center text-xs text-slate-500 dark:text-slate-400">
+        <div class="max-w-7xl mx-auto px-4">
+            <p>General Chemistry I — Lecture 1: Matter, Changes & Classification</p>
+            <p class="mt-1">National Technical Institute — First-Year Student Lesson Notes & Practice Guide</p>
+        </div>
+    </footer>
+
+    <!-- JAVASCRIPT LOGIC -->
+    <script>
+        // DATA STRUCTURES FROM DOCUMENT
+        const labData = {
+            'blood': {
+                title: 'a. Blood Separation',
+                method: 'Centrifuge',
+                badgeColor: 'bg-rose-100 text-rose-700 dark:bg-rose-900/50 dark:text-rose-300',
+                icon: 'fa-vial-circle-check',
+                explanation: 'A centrifuge spins the blood tube at high speeds. Dense blood cells are forced to the bottom, separating cleanly from the liquid blood plasma at the top.',
+                steps: [
+                    'Place blood sample into centrifuge tube.',
+                    'Spin at high RPM (revolutions per minute).',
+                    'Heavy red/white blood cells collect at the bottom.',
+                    'Clear yellow blood plasma remains at the top phase.'
+                ]
+            },
+            'petroleum': {
+                title: 'b. Petroleum (Crude Oil) Separation',
+                method: 'Fractional Distillation',
+                badgeColor: 'bg-amber-100 text-amber-700 dark:bg-amber-900/50 dark:text-amber-300',
+                icon: 'fa-oil-well',
+                explanation: 'Fractional Distillation heats the crude oil mixture. Different liquid hydrocarbons boil and vaporize at different boiling points, allowing them to be collected separately as condensed fractions.',
+                steps: [
+                    'Heat crude oil mixture in a fractionating column.',
+                    'Vapors rise through temperature gradients.',
+                    'Fractions condense at their specific boiling points.',
+                    'Separates gasoline, kerosene, diesel, and lubricating oils.'
+                ]
+            },
+            'water-clay': {
+                title: 'c. Water and Clay Separation',
+                method: 'Filtration',
+                badgeColor: 'bg-blue-100 text-blue-700 dark:bg-blue-900/50 dark:text-blue-300',
+                icon: 'fa-filter',
+                explanation: 'Filtration passes the heterogeneous suspension through porous filter paper. Liquid water passes through (filtrate), while solid clay particles remain caught on the filter (residue).',
+                steps: [
+                    'Fold filter paper into a funnel.',
+                    'Pour the clay-water mixture through.',
+                    'Clay stays on filter paper (solid residue).',
+                    'Pure liquid water collects in beaker below (filtrate).'
+                ]
+            },
+            'nh4cl-nahco3': {
+                title: 'd. Sodium Bicarbonate & Ammonium Chloride',
+                method: 'Hot / Cold Water Dissolving (Solubility Differential)',
+                badgeColor: 'bg-purple-100 text-purple-700 dark:bg-purple-900/50 dark:text-purple-300',
+                icon: 'fa-temperature-arrow-up',
+                explanation: 'Exploits temperature solubility differences: Sodium Bicarbonate dissolves effectively in hot water, while Ammonium Chloride dissolves in cold water.',
+                steps: [
+                    'Add water to mixture at specific temperature.',
+                    'One component dissolves while the other remains solid.',
+                    'Filter out the undissolved solid component.',
+                    'Evaporate or cool liquid to recover the second compound.'
+                ]
+            },
+            'iron-sulfur': {
+                title: 'e. Powdered Iron & Powdered Sulfur Separation',
+                method: 'Magnetism OR CS₂ Solvent Dissolution',
+                badgeColor: 'bg-red-100 text-red-700 dark:bg-red-900/50 dark:text-red-300',
+                icon: 'fa-magnet',
+                explanation: 'Method 1: Iron is ferromagnetic while sulfur is not; a magnet pulls iron powder directly out. Method 2: Dissolve sulfur in Carbon Disulfide (CS₂), leaving insoluble iron behind.',
+                steps: [
+                    'Pass a magnet over the mixture.',
+                    'Iron powder gets attracted to the magnet.',
+                    'Non-magnetic yellow sulfur powder remains.',
+                    'Alternative: Dissolve sulfur in CS₂ solvent & filter out iron.'
+                ]
+            },
+            'salt-starch': {
+                title: 'f. Salt and Starch Separation (Problem 3)',
+                method: 'Dissolution -> Filtration -> Evaporation',
+                badgeColor: 'bg-emerald-100 text-emerald-700 dark:bg-emerald-900/50 dark:text-emerald-300',
+                icon: 'fa-wheat-awn',
+                explanation: 'Salt dissolves in water, but starch does not dissolve. Adding water permits easy physical separation of starch via filtration, followed by evaporation to recover dry salt.',
+                steps: [
+                    'Step 1: Add water to dissolve the soluble salt.',
+                    'Step 2: Filter out the insoluble solid starch.',
+                    'Step 3: Evaporate water from solution to leave dry salt behind.'
+                ]
+            }
+        };
+
+        const mcqQuestions = [
+            {
+                q: "1. What is the smallest unit of an element that maintains its chemical identity?",
+                opts: ["A) Molecule", "B) Atom", "C) Compound", "D) Mixture"],
+                correct: 1,
+                exp: "An atom is the basic building block of an element that maintains its chemical identity."
+            },
+            {
+                q: "2. Which state of matter has a definite volume but an indefinite shape?",
+                opts: ["A) Solid", "B) Liquid", "C) Gas", "D) Plasma"],
+                correct: 1,
+                exp: "Liquids keep a fixed volume, but take the shape of their container."
+            },
+            {
+                q: "3. Which of the following is an example of a PHYSICAL change?",
+                opts: ["A) Rusting of iron", "B) Melting of ice", "C) Burning of wood", "D) Baking a cake"],
+                correct: 1,
+                exp: "Melting changes ice from solid water to liquid water without creating a new chemical."
+            },
+            {
+                q: "4. Sugar dissolved completely in water forms which type of mixture?",
+                opts: ["A) Heterogeneous mixture", "B) Homogeneous mixture (Solution)", "C) Compound", "D) Element"],
+                correct: 1,
+                exp: "Sugar in water forms a uniform single phase throughout (homogeneous solution)."
+            },
+            {
+                q: "5. In a chemical reaction, the starting substances that react together are called:",
+                opts: ["A) Products", "B) Reactants", "C) Solutions", "D) Elements"],
+                correct: 1,
+                exp: "Reactants are the starting materials that undergo chemical change."
+            },
+            {
+                q: "6. Water (H₂O) can be broken down into hydrogen gas and oxygen gas. Water is a(n):",
+                opts: ["A) Element", "B) Atom", "C) Compound", "D) Heterogeneous mixture"],
+                correct: 2,
+                exp: "A compound contains two or more elements chemically combined that can be decomposed."
+            }
+        ];
+
+        const flashcards = [
+            { q: "Exercise 1: Define 'Matter' in simple words.", a: "Matter is anything that has mass and occupies space (takes up room)." },
+            { q: "Exercise 2: Name the four main states of matter.", a: "1. Solid, 2. Liquid, 3. Gas, 4. Plasma." },
+            { q: "Exercise 3: Give two simple examples of a physical change.", a: "1. Cutting paper into pieces, 2. Melting an ice cube." },
+            { q: "Exercise 4: Give two simple examples of a chemical change.", a: "1. Burning wood in fire, 2. Rusting of an iron nail." },
+            { q: "Exercise 5: Difference between homogeneous & heterogeneous mixture?", a: "Homogeneous has uniform appearance throughout (salt water). Heterogeneous has visible different parts (clay in water)." },
+            { q: "Exercise 6: How can you separate iron powder and sand easily?", a: "By using a magnet. The magnet pulls out iron powder, leaving sand behind." },
+            { q: "Concept Check: What is NOT true for an Element?", a: "Option (c): 'Can be separated into simpler substances by ordinary chemical reaction' is FALSE. Elements cannot be decomposed." },
+            { q: "Problem 2: Separation method for Alcohol, Oil, and Gasoline?", a: "Distillation (separates liquid mixtures based on differences in boiling points)." }
+        ];
+
+        const selfTestQuestions = [
+            { q: "1. Write down the definition of an Atom.", ans: "The smallest unit of an element that maintains the chemical identity of that element." },
+            { q: "2. Is boiling water a physical change or a chemical change?", ans: "Physical change (phase change from liquid to gas without changing H₂O chemical identity)." },
+            { q: "3. Which state of matter has an indefinite shape and an indefinite volume?", ans: "Gas (and Plasma)." },
+            { q: "4. Name one example of a solution (homogeneous mixture).", ans: "Sugar in water, salt in water, or air." },
+            { q: "5. What method is used to separate solid clay from liquid water?", ans: "Filtration." },
+            { q: "6. In the chemical equation C + O₂ ➔ CO₂, what is CO₂ called?", ans: "Product." }
+        ];
+
+        let mcqScore = 0;
+        let mcqAnswered = new Array(mcqQuestions.length).fill(false);
+        let selfScore = 0;
+
+        // THEME TOGGLE
+        const themeToggle = document.getElementById('theme-toggle');
+        themeToggle.addEventListener('click', () => {
+            document.documentElement.classList.toggle('dark');
+        });
+
+        // TAB NAVIGATION
+        function switchTab(tab) {
+            document.querySelectorAll('main > section').forEach(sec => sec.classList.add('hidden'));
+            document.getElementById(`content-${tab}`).classList.remove('hidden');
+
+            document.querySelectorAll('.nav-btn').forEach(btn => {
+                btn.classList.remove('bg-brand-50', 'text-brand-600', 'dark:bg-slate-700', 'dark:text-brand-400', 'shadow-sm');
+                btn.classList.add('text-slate-600', 'dark:text-slate-300');
+            });
+
+            const activeBtn = document.getElementById(`tab-${tab}`);
+            if(activeBtn) {
+                activeBtn.classList.add('bg-brand-50', 'text-brand-600', 'dark:bg-slate-700', 'dark:text-brand-400', 'shadow-sm');
+                activeBtn.classList.remove('text-slate-600', 'dark:text-slate-300');
+            }
+        }
+
+        function toggleMobileMenu() {
+            const menu = document.getElementById('mobile-menu');
+            menu.classList.toggle('hidden');
+        }
+
+        // LAB SIMULATOR LOGIC
+        function loadLabSim(key) {
+            const data = labData[key];
+            const container = document.getElementById('sim-display-content');
+
+            // Highlight active button
+            document.querySelectorAll('.lab-btn').forEach(b => {
+                b.classList.remove('border-2', 'border-brand-500', 'bg-brand-50', 'dark:bg-slate-800');
+                b.classList.add('border', 'border-slate-200', 'dark:border-slate-700');
+            });
+            const activeBtn = document.getElementById(`btn-${key}`);
+            if(activeBtn) {
+                activeBtn.classList.add('border-2', 'border-brand-500', 'bg-brand-50');
+            }
+
+            container.innerHTML = `
+                <div class="space-y-4 animate-fadeIn">
+                    <div class="flex flex-wrap items-center justify-between gap-2">
+                        <h3 class="text-2xl font-bold text-slate-900 dark:text-white">${data.title}</h3>
+                        <span class="px-3 py-1 rounded-full text-xs font-bold ${data.badgeColor} flex items-center gap-1.5">
+                            <i class="fa-solid ${data.icon}"></i> ${data.method}
+                        </span>
+                    </div>
+
+                    <p class="text-slate-600 dark:text-slate-300 text-sm leading-relaxed bg-slate-50 dark:bg-slate-700/40 p-4 rounded-xl border border-slate-100 dark:border-slate-700">
+                        ${data.explanation}
+                    </p>
+
+                    <div class="space-y-3 pt-2">
+                        <h4 class="font-bold text-sm text-slate-800 dark:text-slate-200 uppercase tracking-wider">Step-by-Step Separation Procedure:</h4>
+                        <div class="space-y-2">
+                            ${data.steps.map((step, idx) => `
+                                <div class="flex items-start gap-3 p-3 rounded-xl bg-slate-50 dark:bg-slate-700/30 border border-slate-100 dark:border-slate-700">
+                                    <span class="w-6 h-6 rounded-full bg-brand-500 text-white font-bold text-xs flex items-center justify-center flex-shrink-0 mt-0.5">${idx + 1}</span>
+                                    <span class="text-sm text-slate-700 dark:text-slate-200">${step}</span>
+                                </div>
+                            `).join('')}
+                        </div>
+                    </div>
+                </div>
+            `;
+        }
+
+        // RENDER MCQS
+        function renderMCQs() {
+            const container = document.getElementById('mcq-container');
+            container.innerHTML = mcqQuestions.map((item, idx) => `
+                <div class="p-6 bg-white dark:bg-slate-800 rounded-2xl border border-slate-200 dark:border-slate-700 shadow-sm space-y-4" id="mcq-card-${idx}">
+                    <p class="font-bold text-slate-900 dark:text-white text-base">${item.q}</p>
+                    <div class="grid grid-cols-1 sm:grid-cols-2 gap-2.5">
+                        ${item.opts.map((opt, oIdx) => `
+                            <button onclick="checkMCQ(${idx}, ${oIdx})" id="mcq-opt-${idx}-${oIdx}" class="mcq-opt-${idx} text-left p-3.5 rounded-xl border border-slate-200 dark:border-slate-700 hover:bg-slate-50 dark:hover:bg-slate-700 text-sm font-medium transition-all">
+                                ${opt}
+                            </button>
+                        `).join('')}
+                    </div>
+                    <div id="mcq-feedback-${idx}" class="hidden p-3.5 rounded-xl text-xs leading-relaxed"></div>
+                </div>
+            `).join('');
+        }
+
+        function checkMCQ(qIdx, optIdx) {
+            if(mcqAnswered[qIdx]) return;
+            mcqAnswered[qIdx] = true;
+
+            const q = mcqQuestions[qIdx];
+            const feedbackEl = document.getElementById(`mcq-feedback-${qIdx}`);
+            feedbackEl.classList.remove('hidden');
+
+            const selectedBtn = document.getElementById(`mcq-opt-${qIdx}-${optIdx}`);
+
+            if(optIdx === q.correct) {
+                mcqScore++;
+                selectedBtn.classList.add('bg-emerald-500', 'text-white', 'border-emerald-500');
+                feedbackEl.classList.add('bg-emerald-50', 'dark:bg-emerald-900/30', 'text-emerald-800', 'dark:text-emerald-300', 'border', 'border-emerald-200');
+                feedbackEl.innerHTML = `<strong><i class="fa-solid fa-circle-check mr-1"></i> Correct!</strong> ${q.exp}`;
+            } else {
+                selectedBtn.classList.add('bg-rose-500', 'text-white', 'border-rose-500');
+                document.getElementById(`mcq-opt-${qIdx}-${q.correct}`).classList.add('bg-emerald-500', 'text-white', 'border-emerald-500');
+                feedbackEl.classList.add('bg-rose-50', 'dark:bg-rose-900/30', 'text-rose-800', 'dark:text-rose-300', 'border', 'border-rose-200');
+                feedbackEl.innerHTML = `<strong><i class="fa-solid fa-circle-xmark mr-1"></i> Incorrect.</strong> ${q.exp}`;
+            }
+
+            document.getElementById('mcq-score-display').innerText = `${mcqScore} / ${mcqQuestions.length}`;
+        }
+
+        function resetMCQ() {
+            mcqScore = 0;
+            mcqAnswered.fill(false);
+            document.getElementById('mcq-score-display').innerText = `0 / ${mcqQuestions.length}`;
+            renderMCQs();
+        }
+
+        // RENDER FLASHCARDS
+        function renderFlashcards() {
+            const container = document.getElementById('flashcard-container');
+            container.innerHTML = flashcards.map((card, idx) => `
+                <div class="flip-card h-48 cursor-pointer" onclick="this.classList.toggle('flipped')">
+                    <div class="flip-card-inner relative w-full h-full text-center shadow-sm rounded-2xl">
+                        <!-- Front -->
+                        <div class="flip-card-front absolute w-full h-full bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-2xl p-5 flex flex-col justify-between">
+                            <span class="text-xs font-bold text-brand-600 dark:text-brand-400 uppercase tracking-wider">Question Card ${idx+1}</span>
+                            <p class="font-semibold text-slate-800 dark:text-slate-100 text-sm leading-snug">${card.q}</p>
+                            <span class="text-xs text-slate-400 flex items-center justify-center gap-1">
+                                <i class="fa-solid fa-rotate"></i> Click to flip
+                            </span>
+                        </div>
+                        <!-- Back -->
+                        <div class="flip-card-back absolute w-full h-full bg-slate-900 text-white rounded-2xl p-5 flex flex-col justify-between">
+                            <span class="text-xs font-bold text-amber-400 uppercase tracking-wider">Teacher's Answer</span>
+                            <p class="text-xs text-slate-200 leading-relaxed">${card.a}</p>
+                            <span class="text-xs text-slate-400 flex items-center justify-center gap-1">
+                                <i class="fa-solid fa-rotate"></i> Click to flip back
+                            </span>
+                        </div>
+                    </div>
+                </div>
+            `).join('');
+        }
+
+        // RENDER SELF TEST
+        function renderSelfTest() {
+            const container = document.getElementById('selftest-container');
+            container.innerHTML = selfTestQuestions.map((item, idx) => `
+                <div class="p-5 bg-white dark:bg-slate-800 rounded-2xl border border-slate-200 dark:border-slate-700 shadow-sm space-y-3">
+                    <p class="font-bold text-slate-900 dark:text-white text-sm">${item.q}</p>
+                    <div class="flex flex-col sm:flex-row gap-2">
+                        <input type="text" id="self-input-${idx}" placeholder="Type your answer here..." class="flex-grow px-3.5 py-2 text-sm rounded-xl border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-700 focus:outline-none focus:ring-2 focus:ring-brand-500">
+                        <button onclick="revealSelfAns(${idx})" class="px-4 py-2 bg-slate-100 dark:bg-slate-700 text-slate-700 dark:text-slate-200 rounded-xl text-xs font-bold hover:bg-brand-500 hover:text-white transition-all">
+                            Reveal Answer
+                        </button>
+                    </div>
+                    <div id="self-ans-${idx}" class="hidden p-3 rounded-xl bg-amber-50 dark:bg-amber-900/30 text-amber-900 dark:text-amber-200 text-xs border border-amber-200/50">
+                        <strong>Official Answer:</strong> ${item.ans}
+                    </div>
+                </div>
+            `).join('');
+        }
+
+        function revealSelfAns(idx) {
+            const ansDiv = document.getElementById(`self-ans-${idx}`);
+            if(ansDiv.classList.contains('hidden')) {
+                ansDiv.classList.remove('hidden');
+            } else {
+                ansDiv.classList.add('hidden');
+            }
+        }
+
+        // INITIALIZATION
+        window.onload = function() {
+            loadLabSim('blood');
+            renderMCQs();
+            renderFlashcards();
+            renderSelfTest();
+        };
+    </script>
+</body>
+</html>
